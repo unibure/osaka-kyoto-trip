@@ -58,7 +58,8 @@
 .schedule-stop.is-custom .schedule-title-row .edit-event{background:var(--lime)}
 .schedule-stop.is-custom .schedule-title-row .remove-event{border:1.5px solid var(--ink);background:#fff0bb;font-size:13px}
 @media(max-width:700px){
-    .schedule-stop.is-custom .schedule-title-row{gap:6px}.schedule-stop.is-custom .schedule-title-row h3{flex:1 1 100%}
+    .schedule-stop.is-custom .schedule-title-row{gap:6px}
+    .schedule-stop.is-custom .schedule-title-row h3{flex:1 1 100%}
     .schedule-stop.is-custom .schedule-title-row .transport-toggle,.schedule-stop.is-custom .schedule-title-row .edit-event,.schedule-stop.is-custom .schedule-title-row .remove-event{height:26px;padding:5px 9px;font-size:12px}
 }
 .schedule-stop.is-custom .schedule-content{position:static;padding-right:0}
@@ -171,7 +172,7 @@ button:active{transform:translate(2px,2px) scale(.98);filter:brightness(.96)}
 .schedule-stop.is-custom.is-dragging{opacity:.55;outline:2px dashed var(--ink);outline-offset:2px}
 @media(max-width:700px){
     .schedule-stop.is-custom{grid-template-columns:1fr; padding-right:10px;}
-    .schedule-stop.is-custom .schedule-title-row{padding-right:0px}
+    .schedule-stop.is-custom .schedule-title-row{padding-right:0px;flex-wrap: nowrap;}
     .schedule-meta{gap:3px}.schedule-meta .drag-handle{width:30px;height:30px;min-width:30px;min-height:30px;font-size:18px}
 }
 @media(max-width:370px){.schedule-stop.is-custom{grid-template-columns:63px 1fr}}
