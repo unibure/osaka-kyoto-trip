@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff7ed">
+<title>술도녀 오사카 라스고</title>
+<meta name="description" content="꼬니 · 나라시 · 우키링 · 깡이정의 술도녀 오사카 &amp; 교토 2박 3일 여행 기록">
+<link rel="canonical" href="https://osaka-kyoto-trip-nine.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:site_name" content="술도녀 오사카 라스고">
+<meta property="og:title" content="술도녀 오사카 라스고">
+<meta property="og:description" content="꼬니 · 나라시 · 우키링 · 깡이정과 함께하는 오사카 &amp; 교토 girls trip ✦">
+<meta property="og:url" content="https://osaka-kyoto-trip-nine.vercel.app/">
+<meta property="og:image" content="https://osaka-kyoto-trip-nine.vercel.app/assets/osaka-y2k-og.png">
+<meta property="og:image:secure_url" content="https://osaka-kyoto-trip-nine.vercel.app/assets/osaka-y2k-og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="핑크 Y2K 포토부스 프레임 안에 담긴 네 명의 오사카 교토 여행 멤버">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="술도녀 오사카 라스고">
+<meta name="twitter:description" content="꼬니 · 나라시 · 우키링 · 깡이정과 함께하는 오사카 &amp; 교토 girls trip ✦">
+<meta name="twitter:image" content="https://osaka-kyoto-trip-nine.vercel.app/assets/osaka-y2k-og.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="intro" id="intro" aria-label="여행 인트로">
+    <div class="sun"></div>
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <span class="intro-sticker sticker-heart" aria-hidden="true">♡</span>
+    <span class="intro-sticker sticker-bolt" aria-hidden="true">↯</span>
+    <span class="intro-sticker sticker-star" aria-hidden="true">✦</span>
+    <i class="spark s1">✦</i>
+    <i class="spark s2">✧</i>
+    <i class="spark s3">✦</i>
+
+    <div class="intro-inner">
+      <span class="intro-top">✦ the kansai travel club ✦</span>
+      <div class="crew" id="introCrew"></div>
+      <section class="intro-photo-booth" aria-label="여행 타이틀과 친구들 사진">
+        <div class="kiosk-heading">
+          <span class="kiosk-dots" aria-hidden="true">● ● ●</span>
+          <span class="kiosk-title">girls trip!</span>
+          <span class="kiosk-mode">PHOTO KIOSK</span>
+        </div>
+        <div class="intro-friends">
+          <span class="friend-orbit" aria-hidden="true">✦</span>
+          <img src="assets/intro-friend-2.png" alt="여행 멤버 사진 2">
+          <img src="assets/intro-friend-1.png" alt="여행 멤버 사진 1">
+          <img src="assets/intro-friend-3.png" alt="여행 멤버 사진 3">
+          <img src="assets/intro-friend-4.png" alt="여행 멤버 사진 4">
+          <span class="friend-caption">✦ osaka · kyoto · 2026 ✦</span>
+        </div>
+        <div class="kiosk-footer"><span>♡ MEMORY 01</span><span class="kiosk-camera">◎</span><span>FILTER: Y2K ✦</span></div>
+      </section>
+      <p class="subtitle">술도녀의 술 먹방 오사카 &amp; 교토 여행</p>
+      <button class="go" id="go">let's go! ✦</button>
+      <button class="skip" id="skip">인트로 건너뛰기</button>
+    </div>
+  </div>
+
+  <main class="app">
+    <header class="topbar">
+      <button type="button" class="brand" id="brandHome" aria-label="인트로 다시 보기">
+        <span class="brand-mark">✦</span>
+        <span>술도녀의 오사카 술먹방여행</span>
+      </button>
+      <span class="day-pill">2박 3일&nbsp; · &nbsp;10.24 — 10.26</span>
+    </header>
+
+    <section class="main">
+      <h1 class="welcome" id="welcome"><em>첫째 날 · 오사카</em></h1>
+
+      <section class="section-view" id="scheduleView">
+        <div class="dashboard">
+          <article class="card plan schedule-card">
+            <div class="card-head">
+              <div>
+                <span class="eyebrow" id="scheduleEyebrow">DAY 01 · OSAKA</span>
+                <h2 id="scheduleTitle">오늘도 오지게 먹어보자</h2>
+              </div>
+              <span class="date" id="scheduleDate">10월 24일</span>
+            </div>
+
+            <div class="route">
+              <span class="station" id="routeStart">오사카</span>
+              <span class="dash"></span>
+              <span class="station" id="routeEnd">오사카 시내</span>
+            </div>
+
+            <div class="schedule-list" id="scheduleList" aria-live="polite"></div>
+            <p class="edit-hint">링크에 접속한 사람은 일정을 함께 보고 수정할 수 있어요. 변경사항은 자동 저장돼요.</p>
+            <p id="saveStatus" role="status" aria-live="polite"></p>
+
+            <form class="schedule-form" id="scheduleForm">
+              <div class="schedule-form-title">
+                <b>＋ 일정 직접 추가</b>
+                <span id="addingDay">1일차 일정</span>
+              </div>
+              <div class="schedule-form-fields">
+                <label class="event-time">
+                  시간
+                  <input id="eventTime" maxlength="20" placeholder="예: 오후 4시">
+                </label>
+                <label class="event-name">
+                  일정 이름
+                  <input id="eventName" maxlength="80" placeholder="가고 싶은 곳이나 할 일" required>
+                </label>
+                <label class="event-transport">
+                  교통편
+                  <input id="eventTransport" maxlength="160" placeholder="예: JR 교토선 쾌속">
+                </label>
+                <label class="event-note">
+                  메모
+                  <input id="eventNote" maxlength="160" placeholder="선택 사항">
+                </label>
+                <div class="schedule-form-actions">
+                  <button type="submit">추가하기</button>
+                  <button type="button" data-cancel-edit>취소</button>
+                </div>
+              </div>
+            </form>
+          </article>
+        </div>
+
+        <article class="card packing-card">
+          <div class="pack-heading">
+            <h2>준비물 리스트</h2>
+            <span id="packCount">0/0 완료</span>
+          </div>
+          <ul class="pack-list" id="packList"></ul>
+          <form id="packForm">
+            <input id="packInput" maxlength="40" placeholder="준비물을 직접 추가" aria-label="추가할 준비물">
+            <button type="submit" aria-label="준비물 추가">추가</button>
+          </form>
+          <small class="save-note">추가하거나 체크한 내용은 자동 저장돼요</small>
+        </article>
+
+        <article class="card crew-card">
+          <div class="crew-mini" id="miniCrew"></div>
+          <div class="crew-copy">
+            <h2>술도녀의 (술)먹방여행 라스고</h2>
+          </div>
+          <button class="replay" id="replay">✦ 인트로 다시 보기</button>
+        </article>
+      </section>
+
+      <footer class="footer">MADE OF LITTLE MOMENTS · KANSAI TRAVEL</footer>
+    </section>
+
+    <nav class="nav" aria-label="여행 날짜">
+      <button class="nav-day active" data-day="0">
+        <b>1일차</b>
+        <span>10.24</span>
+      </button>
+      <button class="nav-day" data-day="1">
+        <b>2일차</b>
+        <span>10.25 · 교토</span>
+      </button>
+      <button class="nav-day" data-day="2">
+        <b>3일차</b>
+        <span>10.26</span>
+      </button>
+    </nav>
+  </main>
+  <div class="heart-cursor" id="heartCursor" aria-hidden="true">
+    <img src="assets/heart-sticker-cursor.png" alt="">
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>
