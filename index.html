@@ -109,6 +109,10 @@
                   일정 이름
                   <input id="eventName" maxlength="80" placeholder="가고 싶은 곳이나 할 일" required>
                 </label>
+                <label class="event-tag">
+                  분류
+                  <input id="eventTag" maxlength="12" list="tagSuggestions" placeholder="선택 사항 · 맛집, 관광지, 쇼핑" autocomplete="off">
+                </label>
                 <label class="event-transport">
                   교통편
                   <input id="eventTransport" maxlength="160" placeholder="예: JR 교토선 쾌속">
@@ -117,6 +121,11 @@
                   메모
                   <input id="eventNote" maxlength="160" placeholder="선택 사항">
                 </label>
+                <datalist id="tagSuggestions">
+                  <option value="맛집"></option>
+                  <option value="관광지"></option>
+                  <option value="쇼핑"></option>
+                </datalist>
                 <div class="schedule-form-actions">
                   <button type="submit">추가하기</button>
                   <button type="button" data-cancel-edit>취소</button>

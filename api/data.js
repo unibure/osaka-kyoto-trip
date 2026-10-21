@@ -12,6 +12,10 @@ function validDay(day) {
   return Number.isInteger(day) && day >= 0 && day <= 2;
 }
 
+function cleanTag(value) {
+  return String(value || '').trim().slice(0, 12);
+}
+
 function emptyState() {
   return { schedule: { 0: [], 1: [], 2: [] }, packing: [] };
 }
@@ -27,6 +31,7 @@ function normalizeState(raw) {
         id: item.id,
         time: String(item.time || '').slice(0, 20),
         title: String(item.title || '').slice(0, 48),
+        tag: cleanTag(item.tag),
         note: String(item.note || '').slice(0, 80),
         transit: String(item.transit || '').slice(0, 80),
         order: Number.isFinite(item.order) ? item.order : index,
@@ -77,6 +82,7 @@ export async function POST(request) {
         id: randomUUID(),
         time: String(body.time || '').trim().slice(0, 20),
         title,
+        tag: cleanTag(body.tag),
         note: String(body.note || '').trim().slice(0, 80),
         transit: String(body.transit || '').trim().slice(0, 80),
         order,
@@ -98,6 +104,7 @@ export async function POST(request) {
         ...found,
         time: String(body.time || '').trim().slice(0, 20),
         title,
+        tag: cleanTag(body.tag),
         note: String(body.note || '').trim().slice(0, 80),
         transit: String(body.transit || '').trim().slice(0, 80),
       };

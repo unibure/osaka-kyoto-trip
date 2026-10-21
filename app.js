@@ -59,6 +59,28 @@ function safeText(value){
     ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])
   )
 }
+const TAG_GROUPS=[
+  {color:'pink',aliases:['맛집','맛있는','음식','식당','밥','카페','술집','이자카야','디저트']},
+  {color:'yellow',aliases:['관광','관광지','명소','사원','신사','전망대','산책']},
+  {color:'lavender',aliases:['쇼핑','상점','돈키','백화점','기념품']}
+];
+function normalizeTag(value){
+  return String(value||'').trim().replace(/\s+/g,' ').slice(0,12)
+}
+function resolveTagColor(raw){
+  const text=normalizeTag(raw).replace(/\s+/g,'');
+  if(text.length<2)return 'neutral';
+  const found=TAG_GROUPS.find(group=>group.aliases.some(alias=>{
+    if(alias.length<2)return false;
+    return text===alias||alias.startsWith(text)||text.startsWith(alias)
+  }));
+  return found?found.color:'neutral'
+}
+function tagBadge(raw){
+  const tag=normalizeTag(raw);
+  if(!tag)return '';
+  return `<span class="place-tag place-tag-${resolveTagColor(tag)}">${safeText(tag)}</span>`
+}
 function showGate(message='',tone='error'){
   const el=document.querySelector('#saveStatus');
   el.textContent=message;
@@ -107,7 +129,7 @@ async function refreshRemote({quiet=false}={}){
       for(const [day,items] of Object.entries(legacySchedule||{}))
         for(const item of (Array.isArray(items)?items:[]))await apiCall('/api/data',{
           method:'POST',
-          body:JSON.stringify({kind:'schedule',action:'add',day:Number(day),time:item.time,title:item.title,note:item.note,transit:item.transit})
+          body:JSON.stringify({kind:'schedule',action:'add',day:Number(day),time:item.time,title:item.title,tag:item.tag,note:item.note,transit:item.transit})
         });
       for(const item of (Array.isArray(legacyPacking)?legacyPacking:[]))
         if(item.name)
@@ -264,6 +286,7 @@ function editSchedule(item){
   editingEventDay=currentDay;
   document.querySelector('#eventTime').value=item.time||'';
   document.querySelector('#eventName').value=item.title;
+  document.querySelector('#eventTag').value=item.tag||'';
   document.querySelector('#eventTransport').value=item.transit||'';
   document.querySelector('#eventNote').value=item.note||'';
   const form=document.querySelector('#scheduleForm');
@@ -274,9 +297,9 @@ function editSchedule(item){
   document.querySelector('#eventName').focus({preventScroll:true})
 }
 function renderSchedule(n){
-  const row=([time,title,note,transit],custom=false,id='')=>{
+  const row=([time,title,note,transit,tag],custom=false,id='')=>{
     const transport=String(transit||'').trim();
-    return `<article class="schedule-stop${custom?' is-custom':''}"${custom?` data-schedule-id="${safeText(id)}"`:''}><div class="schedule-meta">${custom?`<button class="drag-handle" type="button" data-drag-handle aria-label="${safeText(title)} 일정 순서 변경" title="드래그해 순서 변경">⠿</button>`:''}<time>${safeText(time)}</time></div><div class="schedule-content"><div class="schedule-title-row"><h3>${safeText(title)}</h3>${transport?'<button class="transport-toggle" type="button" aria-expanded="false">교통편</button>':''}</div>${custom?`<div class="event-actions"><button class="edit-event" type="button" data-edit-event="${safeText(id)}" aria-label="${safeText(title)} 일정 수정">수정</button><button class="remove-event" type="button" data-event-id="${safeText(id)}" aria-label="${safeText(title)} 일정 삭제">삭제</button></div>`:''}${note?`<p>${safeText(note)}</p>`:''}${transport?`<div class="transport-content" hidden><b>교통편</b><p>${safeText(transport)}</p></div>`:''}</div></article>`
+    return `<article class="schedule-stop${custom?' is-custom':''}"${custom?` data-schedule-id="${safeText(id)}"`:''}><div class="schedule-meta">${custom?`<button class="drag-handle" type="button" data-drag-handle aria-label="${safeText(title)} 일정 순서 변경" title="드래그해 순서 변경">⠿</button>`:''}<time>${safeText(time)}</time></div><div class="schedule-content"><div class="schedule-title-row">${tagBadge(tag)}<h3>${safeText(title)}</h3>${transport?'<button class="transport-toggle" type="button" aria-expanded="false">교통편</button>':''}</div>${custom?`<div class="event-actions"><button class="edit-event" type="button" data-edit-event="${safeText(id)}" aria-label="${safeText(title)} 일정 수정">수정</button><button class="remove-event" type="button" data-event-id="${safeText(id)}" aria-label="${safeText(title)} 일정 삭제">삭제</button></div>`:''}${note?`<p>${safeText(note)}</p>`:''}${transport?`<div class="transport-content" hidden><b>교통편</b><p>${safeText(transport)}</p></div>`:''}</div></article>`
   };
   const defaults=itinerary[n].items.map(item=>row(item)).join('');
   // 시간 정렬 (기본 일정)
@@ -289,7 +312,7 @@ function renderSchedule(n){
     })
   }
   const added=sortedCustom.map(e=>{
-    return row([e.time||'시간 미정',e.title,e.note,e.transit],true,e.id)
+    return row([e.time||'시간 미정',e.title,e.note,e.transit,e.tag],true,e.id)
   }).join('');
   document.querySelector('#scheduleList').innerHTML=defaults+added;
   enableScheduleDragging(document.querySelector('#scheduleList'),n);
@@ -337,6 +360,7 @@ document.querySelector('#scheduleForm').addEventListener('submit',e=>{
     id:editingEventId||`${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
     time:document.querySelector('#eventTime').value.trim(),
     title,
+    tag:normalizeTag(document.querySelector('#eventTag').value),
     transit:document.querySelector('#eventTransport').value.trim(),
     note:document.querySelector('#eventNote').value.trim()
   };
@@ -349,6 +373,7 @@ document.querySelector('#scheduleForm').addEventListener('submit',e=>{
       day:eventDay,
       time:event.time,
       title:event.title,
+      tag:event.tag,
       transit:event.transit,
       note:event.note
     };
@@ -373,7 +398,7 @@ document.querySelector('#scheduleForm').addEventListener('submit',e=>{
   e.currentTarget.reset();
   if(remoteMode)
     apiAction(
-      {kind:'schedule',action:'add',day:currentDay,time:event.time,title:event.title,transit:event.transit,note:event.note},
+      {kind:'schedule',action:'add',day:currentDay,time:event.time,title:event.title,tag:event.tag,transit:event.transit,note:event.note},
       {pendingMessage:'일정 저장 중…'}
     );
   else{
