@@ -60,26 +60,49 @@ function safeText(value){
   )
 }
 const TAG_GROUPS=[
-  {color:'pink',aliases:['맛집','맛있는','음식','식당','밥','카페','술집','이자카야','디저트']},
-  {color:'yellow',aliases:['관광','관광지','명소','사원','신사','전망대','산책']},
-  {color:'lavender',aliases:['쇼핑','상점','돈키','백화점','기념품']}
+  {color:'lime',label:'카페',aliases:['카페','커피','디저트']},
+  {color:'orange',label:'술집',aliases:['술집','이자카야','바','맥주']},
+  {color:'pink',label:'맛집',aliases:['맛집','맛있는','음식','식당','밥']},
+  {color:'yellow',label:'관광지',aliases:['관광','관광지','명소','사원','신사','전망대','산책']},
+  {color:'lavender',label:'쇼핑',aliases:['쇼핑','상점','돈키','백화점','기념품']}
 ];
 function normalizeTag(value){
   return String(value||'').trim().replace(/\s+/g,' ').slice(0,12)
 }
-function resolveTagColor(raw){
+function matchTagGroup(raw){
   const text=normalizeTag(raw).replace(/\s+/g,'');
-  if(text.length<2)return 'neutral';
-  const found=TAG_GROUPS.find(group=>group.aliases.some(alias=>{
+  if(text.length<2)return null;
+  return TAG_GROUPS.find(group=>group.aliases.some(alias=>{
     if(alias.length<2)return false;
     return text===alias||alias.startsWith(text)||text.startsWith(alias)
-  }));
-  return found?found.color:'neutral'
+  }))||null
+}
+function canonicalTag(raw){
+  return matchTagGroup(raw)?.label||''
+}
+function resolveTagColor(raw){
+  return matchTagGroup(raw)?.color||'neutral'
 }
 function tagBadge(raw){
   const tag=normalizeTag(raw);
   if(!tag)return '';
   return `<span class="place-tag place-tag-${resolveTagColor(tag)}">${safeText(tag)}</span>`
+}
+function cleanMapUrl(value){
+  const raw=String(value||'').trim().slice(0,300);
+  if(!raw)return '';
+  let url;
+  try{url=new URL(raw)}catch{return ''}
+  if(url.protocol!=='https:'&&url.protocol!=='http:')return '';
+  const host=url.hostname.toLowerCase();
+  const path=url.pathname;
+  const allowed=
+    host==='maps.app.goo.gl'||
+    host==='maps.google.com'||
+    host==='www.google.com'&&path.startsWith('/maps')||
+    host==='google.com'&&path.startsWith('/maps')||
+    host==='goo.gl'&&path.startsWith('/maps');
+  return allowed?url.href.slice(0,300):''
 }
 function showGate(message='',tone='error'){
   const el=document.querySelector('#saveStatus');
@@ -129,7 +152,7 @@ async function refreshRemote({quiet=false}={}){
       for(const [day,items] of Object.entries(legacySchedule||{}))
         for(const item of (Array.isArray(items)?items:[]))await apiCall('/api/data',{
           method:'POST',
-          body:JSON.stringify({kind:'schedule',action:'add',day:Number(day),time:item.time,title:item.title,tag:item.tag,note:item.note,transit:item.transit})
+          body:JSON.stringify({kind:'schedule',action:'add',day:Number(day),time:item.time,title:item.title,tag:item.tag,mapUrl:item.mapUrl,note:item.note,transit:item.transit})
         });
       for(const item of (Array.isArray(legacyPacking)?legacyPacking:[]))
         if(item.name)
@@ -272,11 +295,29 @@ function enableScheduleDragging(list,day){
 }
 let editingEventId=null;
 let editingEventDay=null;
+function setSelectedTag(value){
+  const tag=canonicalTag(value);
+  document.querySelector('#eventTag').value=tag;
+  document.querySelectorAll('.tag-chips [data-tag]').forEach(button=>{
+    const on=button.dataset.tag===tag;
+    button.classList.toggle('is-on',on);
+    button.setAttribute('aria-pressed',String(on))
+  })
+}
+function setScheduleDetailsOpen(open){
+  const details=document.querySelector('#scheduleDetails');
+  const toggle=document.querySelector('#scheduleDetailsToggle');
+  details.hidden=!open;
+  toggle.setAttribute('aria-expanded',String(open));
+  toggle.textContent=open?'− 교통편 · 메모 · 지도':'＋ 교통편 · 메모 · 지도'
+}
 function resetScheduleEditor(){
   editingEventId=null;
   editingEventDay=null;
   const form=document.querySelector('#scheduleForm');
   form.reset();
+  setSelectedTag('');
+  setScheduleDetailsOpen(false);
   form.querySelector('.schedule-form-title b').textContent='＋ 일정 직접 추가';
   form.querySelector('[type="submit"]').textContent='추가하기';
   form.querySelector('[data-cancel-edit]').style.display='none'
@@ -286,9 +327,11 @@ function editSchedule(item){
   editingEventDay=currentDay;
   document.querySelector('#eventTime').value=item.time||'';
   document.querySelector('#eventName').value=item.title;
-  document.querySelector('#eventTag').value=item.tag||'';
+  setSelectedTag(item.tag||'');
   document.querySelector('#eventTransport').value=item.transit||'';
+  document.querySelector('#eventMap').value=item.mapUrl||'';
   document.querySelector('#eventNote').value=item.note||'';
+  setScheduleDetailsOpen(Boolean((item.transit||'').trim()||(item.note||'').trim()||(item.mapUrl||'').trim()));
   const form=document.querySelector('#scheduleForm');
   form.querySelector('.schedule-form-title b').textContent='일정 수정';
   form.querySelector('[type="submit"]').textContent='변경 저장';
@@ -297,9 +340,10 @@ function editSchedule(item){
   document.querySelector('#eventName').focus({preventScroll:true})
 }
 function renderSchedule(n){
-  const row=([time,title,note,transit,tag],custom=false,id='')=>{
+  const row=([time,title,note,transit,tag,mapUrl],custom=false,id='')=>{
     const transport=String(transit||'').trim();
-    return `<article class="schedule-stop${custom?' is-custom':''}"${custom?` data-schedule-id="${safeText(id)}"`:''}><div class="schedule-meta">${custom?`<button class="drag-handle" type="button" data-drag-handle aria-label="${safeText(title)} 일정 순서 변경" title="드래그해 순서 변경">⠿</button>`:''}<time>${safeText(time)}</time></div><div class="schedule-content"><div class="schedule-title-row">${tagBadge(tag)}<h3>${safeText(title)}</h3>${transport?'<button class="transport-toggle" type="button" aria-expanded="false">교통편</button>':''}</div>${custom?`<div class="event-actions"><button class="edit-event" type="button" data-edit-event="${safeText(id)}" aria-label="${safeText(title)} 일정 수정">수정</button><button class="remove-event" type="button" data-event-id="${safeText(id)}" aria-label="${safeText(title)} 일정 삭제">삭제</button></div>`:''}${note?`<p>${safeText(note)}</p>`:''}${transport?`<div class="transport-content" hidden><b>교통편</b><p>${safeText(transport)}</p></div>`:''}</div></article>`
+    const map=cleanMapUrl(mapUrl);
+    return `<article class="schedule-stop${custom?' is-custom':''}"${custom?` data-schedule-id="${safeText(id)}"`:''}><div class="schedule-meta">${custom?`<button class="drag-handle" type="button" data-drag-handle aria-label="${safeText(title)} 일정 순서 변경" title="드래그해 순서 변경">⠿</button>`:''}<time>${safeText(time)}</time></div><div class="schedule-content"><div class="schedule-title-row">${tagBadge(tag)}<h3>${safeText(title)}</h3>${map?`<a class="map-link" href="${safeText(map)}" target="_blank" rel="noopener noreferrer">지도</a>`:''}${transport?'<button class="transport-toggle" type="button" aria-expanded="false">교통편</button>':''}</div>${custom?`<div class="event-actions"><button class="edit-event" type="button" data-edit-event="${safeText(id)}" aria-label="${safeText(title)} 일정 수정">수정</button><button class="remove-event" type="button" data-event-id="${safeText(id)}" aria-label="${safeText(title)} 일정 삭제">삭제</button></div>`:''}${note?`<p>${safeText(note)}</p>`:''}${transport?`<div class="transport-content" hidden><b>교통편</b><p>${safeText(transport)}</p></div>`:''}</div></article>`
   };
   const defaults=itinerary[n].items.map(item=>row(item)).join('');
   // 시간 정렬 (기본 일정)
@@ -312,7 +356,7 @@ function renderSchedule(n){
     })
   }
   const added=sortedCustom.map(e=>{
-    return row([e.time||'시간 미정',e.title,e.note,e.transit,e.tag],true,e.id)
+    return row([e.time||'시간 미정',e.title,e.note,e.transit,e.tag,e.mapUrl],true,e.id)
   }).join('');
   document.querySelector('#scheduleList').innerHTML=defaults+added;
   enableScheduleDragging(document.querySelector('#scheduleList'),n);
@@ -352,15 +396,32 @@ function showDay(n){
   localStorage.setItem('little-trip-selected-day',String(n))
 }
 document.querySelectorAll('[data-day]').forEach(b=>b.addEventListener('click',()=>showDay(Number(b.dataset.day))));
+document.querySelectorAll('.tag-chips [data-tag]').forEach(button=>button.addEventListener('click',()=>{
+  setSelectedTag(button.dataset.tag===document.querySelector('#eventTag').value?'':button.dataset.tag)
+}));
+document.querySelector('#scheduleDetailsToggle').addEventListener('click',()=>{
+  setScheduleDetailsOpen(document.querySelector('#scheduleDetails').hidden)
+});
+setSelectedTag('');
+setScheduleDetailsOpen(false);
 document.querySelector('#scheduleForm').addEventListener('submit',e=>{
   e.preventDefault();
   const title=document.querySelector('#eventName').value.trim();
   if(!title)return;
+  const mapRaw=document.querySelector('#eventMap').value.trim();
+  const mapUrl=cleanMapUrl(mapRaw);
+  if(mapRaw&&!mapUrl){
+    showGate('구글 지도 공유 링크만 넣을 수 있어요.');
+    setScheduleDetailsOpen(true);
+    document.querySelector('#eventMap').focus();
+    return
+  }
   const event={
     id:editingEventId||`${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
     time:document.querySelector('#eventTime').value.trim(),
     title,
     tag:normalizeTag(document.querySelector('#eventTag').value),
+    mapUrl,
     transit:document.querySelector('#eventTransport').value.trim(),
     note:document.querySelector('#eventNote').value.trim()
   };
@@ -374,6 +435,7 @@ document.querySelector('#scheduleForm').addEventListener('submit',e=>{
       time:event.time,
       title:event.title,
       tag:event.tag,
+      mapUrl:event.mapUrl,
       transit:event.transit,
       note:event.note
     };
@@ -396,9 +458,11 @@ document.querySelector('#scheduleForm').addEventListener('submit',e=>{
     return
   }
   e.currentTarget.reset();
+  setSelectedTag('');
+  setScheduleDetailsOpen(false);
   if(remoteMode)
     apiAction(
-      {kind:'schedule',action:'add',day:currentDay,time:event.time,title:event.title,tag:event.tag,transit:event.transit,note:event.note},
+      {kind:'schedule',action:'add',day:currentDay,time:event.time,title:event.title,tag:event.tag,mapUrl:event.mapUrl,transit:event.transit,note:event.note},
       {pendingMessage:'일정 저장 중…'}
     );
   else{

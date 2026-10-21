@@ -16,6 +16,23 @@ function cleanTag(value) {
   return String(value || '').trim().slice(0, 12);
 }
 
+function cleanMapUrl(value) {
+  const raw = String(value || '').trim().slice(0, 300);
+  if (!raw) return '';
+  let url;
+  try { url = new URL(raw); } catch { return ''; }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return '';
+  const host = url.hostname.toLowerCase();
+  const path = url.pathname;
+  const allowed =
+    host === 'maps.app.goo.gl' ||
+    host === 'maps.google.com' ||
+    host === 'www.google.com' && path.startsWith('/maps') ||
+    host === 'google.com' && path.startsWith('/maps') ||
+    host === 'goo.gl' && path.startsWith('/maps');
+  return allowed ? url.href.slice(0, 300) : '';
+}
+
 function emptyState() {
   return { schedule: { 0: [], 1: [], 2: [] }, packing: [] };
 }
@@ -32,6 +49,7 @@ function normalizeState(raw) {
         time: String(item.time || '').slice(0, 20),
         title: String(item.title || '').slice(0, 48),
         tag: cleanTag(item.tag),
+        mapUrl: cleanMapUrl(item.mapUrl),
         note: String(item.note || '').slice(0, 80),
         transit: String(item.transit || '').slice(0, 80),
         order: Number.isFinite(item.order) ? item.order : index,
@@ -83,6 +101,7 @@ export async function POST(request) {
         time: String(body.time || '').trim().slice(0, 20),
         title,
         tag: cleanTag(body.tag),
+        mapUrl: cleanMapUrl(body.mapUrl),
         note: String(body.note || '').trim().slice(0, 80),
         transit: String(body.transit || '').trim().slice(0, 80),
         order,
@@ -105,6 +124,7 @@ export async function POST(request) {
         time: String(body.time || '').trim().slice(0, 20),
         title,
         tag: cleanTag(body.tag),
+        mapUrl: cleanMapUrl(body.mapUrl),
         note: String(body.note || '').trim().slice(0, 80),
         transit: String(body.transit || '').trim().slice(0, 80),
       };

@@ -105,27 +105,36 @@
                   시간
                   <input id="eventTime" maxlength="20" placeholder="예: 오후 4시">
                 </label>
+                <div class="event-tag" role="group" aria-label="분류">
+                  <span>분류</span>
+                  <div class="tag-chips">
+                    <button type="button" data-tag="맛집">맛집</button>
+                    <button type="button" data-tag="카페">카페</button>
+                    <button type="button" data-tag="술집">술집</button>
+                    <button type="button" data-tag="관광지">관광지</button>
+                    <button type="button" data-tag="쇼핑">쇼핑</button>
+                  </div>
+                  <input type="hidden" id="eventTag">
+                </div>
                 <label class="event-name">
                   일정 이름
                   <input id="eventName" maxlength="80" placeholder="가고 싶은 곳이나 할 일" required>
                 </label>
-                <label class="event-tag">
-                  분류
-                  <input id="eventTag" maxlength="12" list="tagSuggestions" placeholder="선택 사항 · 맛집, 관광지, 쇼핑" autocomplete="off">
-                </label>
-                <label class="event-transport">
-                  교통편
-                  <input id="eventTransport" maxlength="160" placeholder="예: JR 교토선 쾌속">
-                </label>
-                <label class="event-note">
-                  메모
-                  <input id="eventNote" maxlength="160" placeholder="선택 사항">
-                </label>
-                <datalist id="tagSuggestions">
-                  <option value="맛집"></option>
-                  <option value="관광지"></option>
-                  <option value="쇼핑"></option>
-                </datalist>
+                <button type="button" class="schedule-form-more" id="scheduleDetailsToggle" aria-expanded="false" aria-controls="scheduleDetails">＋ 교통편 · 메모 · 지도</button>
+                <div class="schedule-form-details" id="scheduleDetails" hidden>
+                  <label class="event-transport">
+                    교통편
+                    <input id="eventTransport" maxlength="160" placeholder="예: JR 교토선 쾌속">
+                  </label>
+                  <label class="event-map">
+                    지도 링크
+                    <input id="eventMap" maxlength="300" placeholder="Google 지도 공유 링크" inputmode="url" autocomplete="off">
+                  </label>
+                  <label class="event-note">
+                    메모
+                    <input id="eventNote" maxlength="160" placeholder="선택 사항">
+                  </label>
+                </div>
                 <div class="schedule-form-actions">
                   <button type="submit">추가하기</button>
                   <button type="button" data-cancel-edit>취소</button>
