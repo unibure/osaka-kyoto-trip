@@ -186,7 +186,7 @@ button:active{transform:translate(2px,2px) scale(.98);filter:brightness(.96)}
 .place-tag-pink{background:#ffd6e4;color:#c43a6e}
 .place-tag-yellow{background:#fff3b8;color:#8a6a12}
 .place-tag-lavender{background:#e8dcff;color:#6a48b0}
-.place-tag-neutral{background:#fff;color:#625969;border:1px solid #cfc8d4}
+.place-tag-neutral{background:#c2e6fd;color:#074973;}
 .schedule-title-row .place-tag{margin-right:2px}
 @media(max-width:700px){
     .schedule-form-fields .event-name,
